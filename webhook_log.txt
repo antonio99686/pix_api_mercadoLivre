@@ -1,0 +1,14 @@
+2026-04-10 03:10:40 - Dados: 
+2026-04-10 03:14:22 - Método: POST - Body: {"type":"payment","data":{"id":"123456789"}}
+2026-04-10 03:15:07 - Método: POST - Body: id=5
+2026-04-10 03:15:12 - Método: POST - Body: {"type":"payment","data":{"id":"55+62++626+2+2+6"}}
+2026-04-10 03:15:27 - Método: POST - Body: {"type":"payment","data":{"id":"255565626578"}}
+2026-04-10 03:15:29 - Método: POST - Body: {"type":"payment","data":{"id":"255565626578"}}
+2026-04-10 03:16:51 - Método: POST - Body: {"type":"payment","data":{"id":"123456789"}}
+2026-04-10 03:16:51 - Notificação: {"type":"payment","data":{"id":"123456789"}}
+2026-04-10 03:16:59 - Método: POST - Body: {"type":"payment","data":{"id":"123456789"}}
+2026-04-10 03:17:00 - Notificação: {"type":"payment","data":{"id":"123456789"}}
+2026-04-10 03:17:05 - Método: POST - Body: id=2
+2026-04-10 03:17:06 - Notificação: id=2
+2026-04-10 03:17:21 - Método: POST - Body: {"type":"payment","data":{"id":"243324265465"}}
+2026-04-10 03:17:21 - Notificação: {"type":"payment","data":{"id":"243324265465"}}

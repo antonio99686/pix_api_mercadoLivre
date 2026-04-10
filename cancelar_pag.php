@@ -11,17 +11,23 @@ try {
     // Attempt to find the payment by ID
     $payment = MercadoPago\Payment::find_by_id($payment_id);
 
-    if ($payment) {
-        // If payment is found, update its status to "cancelled"
-        $payment->status = "cancelled";
-        $payment->update();
-        echo "Pagamento cancelado.";
+    if ($payment && $payment->id) {
+        // Check if payment can be cancelled (only pending payments can be cancelled)
+        if ($payment->status === 'pending') {
+            // If payment is found, update its status to "cancelled"
+            $payment->status = "cancelled";
+            $payment->update();
+            echo "Pagamento cancelado com sucesso.";
+        } else {
+            // Payment cannot be cancelled due to its current status
+            echo "Pagamento não pode ser cancelado. Status atual: " . $payment->status;
+        }
     } else {
         // Payment not found
         echo "Pagamento não encontrado com o ID fornecido.";
     }
 } catch (Exception $e) {
     // Handle any exceptions that occur during the process
-    echo 'Erro ao cancelar o pagamento: ', $e->getMessage();
+    echo 'Erro ao cancelar o pagamento: ' . $e->getMessage();
 }
 ?>

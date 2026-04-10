@@ -1,0 +1,55 @@
+<?php
+// pagamento_simples.php - Versão sem JavaScript complexo
+require_once __DIR__ . '/vendor/autoload.php';
+
+MercadoPago\SDK::setAccessToken('APP_USR-1228299603673792-062511-2cf7ec6e1d129bd3c26d70331d1b71ab-474362529');
+
+$message = '';
+$payment_status = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        // Dados do cartão (apenas para teste - NÃO USE EM PRODUÇÃO)
+        $payment = new MercadoPago\Payment();
+        $payment->transaction_amount = 100;
+        $payment->description = "Produto Exemplo";
+        $payment->installments = 1;
+        $payment->payment_method_id = "master";
+        
+        // Dados do cartão de teste
+        $payment->token = "e8d7f5c8a9b6e4d2f1a3b5c7d9e1f3a5";
+        $payment->payer = ["email" => "teste@exemplo.com"];
+        
+        $payment->save();
+        
+        if ($payment->status === 'approved') {
+            $message = '<div class="success">✅ Pagamento aprovado! ID: ' . $payment->id . '</div>';
+        } else {
+            $message = '<div class="error">❌ Status: ' . $payment->status . '</div>';
+        }
+        
+    } catch (Exception $e) {
+        $message = '<div class="error">❌ Erro: ' . $e->getMessage() . '</div>';
+    }
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pagamento Simplificado</title>
+    <style>
+        body { font-family: Arial; max-width: 500px; margin: 50px auto; padding: 20px; }
+        button { background: #009ee3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .success { color: green; padding: 10px; background: #e8f5e9; margin: 10px 0; }
+        .error { color: red; padding: 10px; background: #ffebee; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h2>Pagamento Teste</h2>
+    <?php echo $message; ?>
+    <form method="POST">
+        <button type="submit">Pagar R$ 100,00 (Modo Teste)</button>
+    </form>
+    <p style="margin-top: 20px; font-size: 12px; color: #666;">* Este é um modo de teste simplificado</p>
+</body>
+</html>

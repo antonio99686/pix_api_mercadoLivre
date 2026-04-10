@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pagamento com Cartão</title>
+    <meta charset="UTF-8">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            background-color: #009ee3;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #0073b7;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 4px;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+        }
+        .loading {
+            color: #009ee3;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-top: 0;
+        }
+        .valor {
+            font-size: 28px;
+            text-align: center;
+            color: #009ee3;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Pagamento com Cartão de Crédito</h2>
+        <div class="valor">R$ 100,00</div>
+        
+        <form id="paymentForm">
+            <div class="form-group">
+                <label>Número do Cartão</label>
+                <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" autocomplete="off">
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label>Validade (MM/AA)</label>
+                    <input type="text" id="cardExpirationDate" placeholder="MM/AA" autocomplete="off">
+                </div>
+                
+                <div class="form-group">
+                    <label>CVV</label>
+                    <input type="text" id="cardSecurityCode" placeholder="123" autocomplete="off">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Nome no Cartão</label>
+                <input type="text" id="cardholderName" placeholder="NOME COMO ESTÁ NO CARTÃO" autocomplete="off">
+            </div>
+            
+            <div class="form-group">
+                <label>CPF</label>
+                <input type="text" id="docNumber" placeholder="123.456.789-00" autocomplete="off">
+            </div>
+            
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="email@exemplo.com" value="teste@exemplo.com">
+            </div>
+            
+            <div class="form-group">
+                <label>Parcelas</label>
+                <select id="installments">
+                    <option value="1">1x de R$ 100,00</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="payButton">Pagar R$ 100,00</button>
+        </form>
+        
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Inicializar Mercado Pago
+        const mp = new MercadoPago('APP_USR-1228299603673792-062511-2cf7ec6e1d129bd3c26d70331d1b71ab');
+        
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const payButton = document.getElementById('payButton');
+            const messageDiv = document.getElementById('message');
+            
+            payButton.disabled = true;
+            payButton.textContent = 'Processando...';
+            messageDiv.innerHTML = '<div class="loading">⏳ Gerando token do cartão...</div>';
+            
+            try {
+                // Obter dados do cartão
+                const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                const expirationDate = document.getElementById('cardExpirationDate').value;
+                const [expirationMonth, expirationYear] = expirationDate.split('/');
+                const securityCode = document.getElementById('cardSecurityCode').value;
+                const cardholderName = document.getElementById('cardholderName').value;
+                const docNumber = document.getElementById('docNumber').value.replace(/\D/g, '');
+                const email = document.getElementById('email').value;
+                const installments = parseInt(document.getElementById('installments').value);
+                
+                // Validar campos
+                if (!cardNumber || cardNumber.length < 16) {
+                    throw new Error('Número do cartão inválido');
+                }
+                if (!expirationMonth || !expirationYear || expirationMonth.length < 2 || expirationYear.length < 2) {
+                    throw new Error('Data de validade inválida');
+                }
+                if (!securityCode || securityCode.length < 3) {
+                    throw new Error('CVV inválido');
+                }
+                if (!cardholderName) {
+                    throw new Error('Nome no cartão é obrigatório');
+                }
+                if (!docNumber || docNumber.length < 11) {
+                    throw new Error('CPF inválido');
+                }
+                
+                messageDiv.innerHTML = '<div class="loading">⏳ Criando token...</div>';
+                
+                // Criar token do cartão usando a API correta
+                const cardData = {
+                    cardNumber: cardNumber,
+                    expirationMonth: expirationMonth,
+                    expirationYear: expirationYear,
+                    securityCode: securityCode,
+                    cardholderName: cardholderName,
+                    docType: "CPF",
+                    docNumber: docNumber
+                };
+                
+                console.log("Enviando para criar token:", cardData);
+                
+                // Método correto para criar token
+                const response = await fetch('https://api.mercadopago.com/v1/card_tokens', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer APP_USR-1228299603673792-062511-2cf7ec6e1d129bd3c26d70331d1b71ab'
+                    },
+                    body: JSON.stringify({
+                        card_number: cardNumber,
+                        expiration_month: expirationMonth,
+                        expiration_year: expirationYear,
+                        security_code: securityCode,
+                        cardholder: {
+                            name: cardholderName,
+                            identification: {
+                                type: "CPF",
+                                number: docNumber
+                            }
+                        }
+                    })
+                });
+                
+                const tokenResult = await response.json();
+                
+                if (!tokenResult.id) {
+                    console.error("Erro ao criar token:", tokenResult);
+                    throw new Error('Falha ao criar token: ' + JSON.stringify(tokenResult));
+                }
+                
+                const token = tokenResult.id;
+                console.log("Token gerado:", token);
+                
+                messageDiv.innerHTML = '<div class="loading">⏳ Processando pagamento...</div>';
+                
+                // Enviar para o backend
+                const paymentData = {
+                    token: token,
+                    payment_method_id: "master",
+                    installments: installments,
+                    email: email,
+                    transaction_amount: 100,
+                    description: "Produto Exemplo"
+                };
+                
+                const paymentResponse = await fetch('processar_pagamento.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+                
+                const result = await paymentResponse.json();
+                
+                if (result.status === 'approved') {
+                    messageDiv.innerHTML = '<div class="success">✅ Pagamento aprovado com sucesso!<br>ID da transação: ' + result.id + '<br>Status: ' + result.status_detail + '</div>';
+                } else if (result.status === 'pending') {
+                    messageDiv.innerHTML = '<div class="loading">⏳ Pagamento pendente: ' + (result.status_detail || 'Aguardando confirmação') + '</div>';
+                } else if (result.status === 'rejected') {
+                    messageDiv.innerHTML = '<div class="error">❌ Pagamento rejeitado: ' + (result.status_detail || 'Tente novamente com outro cartão') + '</div>';
+                } else {
+                    messageDiv.innerHTML = '<div class="error">❌ Status: ' + result.status + '<br>' + (result.message || 'Erro no pagamento') + '</div>';
+                }
+                
+            } catch (error) {
+                console.error("Erro detalhado:", error);
+                messageDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            } finally {
+                payButton.disabled = false;
+                payButton.textContent = 'Pagar R$ 100,00';
+            }
+        });
+    </script>
+</body>
+</html>

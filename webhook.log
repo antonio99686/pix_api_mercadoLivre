@@ -1,0 +1,11 @@
+2026-04-10 03:11:58 - Recebido: 
+2026-04-10 03:11:58 - Erro: JSON inválido
+2026-04-10 03:12:01 - Recebido: 
+2026-04-10 03:12:01 - Erro: JSON inválido
+2026-04-10 03:12:05 - Recebido: 
+2026-04-10 03:12:05 - Erro: JSON inválido
+2026-04-10 03:13:24 - Recebido: 
+2026-04-10 03:13:24 - Erro: JSON inválido
+2026-04-10 03:13:58 - Recebido: {"type":"payment","data":{"id":"123456789"}}
+2026-04-10 03:13:58 - Processando pagamento: 123456789
+2026-04-10 03:13:58 - Pagamento não encontrado: 123456789

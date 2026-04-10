@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pagamento com Cartão</title>
+    <meta charset="UTF-8">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #009ee3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0073b7;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Pagamento com Cartão de Crédito</h2>
+    <form id="paymentForm" action="processar_pagamento.php" method="POST">
+        <div class="form-group">
+            <label>Número do Cartão</label>
+            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456">
+        </div>
+        
+        <div class="form-group">
+            <label>Mês de Vencimento</label>
+            <input type="text" id="cardExpirationMonth" placeholder="MM">
+        </div>
+        
+        <div class="form-group">
+            <label>Ano de Vencimento</label>
+            <input type="text" id="cardExpirationYear" placeholder="AAAA">
+        </div>
+        
+        <div class="form-group">
+            <label>CVV</label>
+            <input type="text" id="cardSecurityCode" placeholder="123">
+        </div>
+        
+        <div class="form-group">
+            <label>Nome no Cartão</label>
+            <input type="text" id="cardholderName" placeholder="NOME COMO ESTÁ NO CARTÃO">
+        </div>
+        
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="email@exemplo.com">
+        </div>
+        
+        <div class="form-group">
+            <label>Parcelas</label>
+            <select id="installments">
+                <option value="1">1x de R$ 100,00</option>
+            </select>
+        </div>
+        
+        <input type="hidden" id="token" name="token">
+        <input type="hidden" id="payment_method_id" name="payment_method_id">
+        
+        <button type="submit" id="payButton">Pagar R$ 100,00</button>
+    </form>
+    
+    <div id="message"></div>
+
+    <script>
+        const mp = new MercadoPago('APP_USR-1228299603673792-062511-2cf7ec6e1d129bd3c26d70331d1b71ab', {
+            locale: 'pt-BR'
+        });
+        
+        const cardForm = mp.cardForm({
+            amount: "100.00",
+            autoMount: true,
+            form: {
+                id: "paymentForm",
+                cardholderName: {
+                    id: "cardholderName",
+                    placeholder: "NOME COMO ESTÁ NO CARTÃO",
+                },
+                cardNumber: {
+                    id: "cardNumber",
+                    placeholder: "Número do cartão",
+                },
+                expirationMonth: {
+                    id: "cardExpirationMonth",
+                    placeholder: "MM",
+                },
+                expirationYear: {
+                    id: "cardExpirationYear",
+                    placeholder: "AAAA",
+                },
+                securityCode: {
+                    id: "cardSecurityCode",
+                    placeholder: "CVV",
+                },
+            },
+            callbacks: {
+                onFormMounted: error => {
+                    if (error) return console.error("Form Mounted error", error);
+                },
+                onSubmit: event => {
+                    event.preventDefault();
+                    const {
+                        paymentMethodId: payment_method_id,
+                        cardholderName: cardholderName,
+                        ...formData
+                    } = cardForm.getCardFormData();
+                    
+                    fetch("processar_pagamento.php", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            token: formData.token,
+                            payment_method_id: payment_method_id,
+                            installments: document.getElementById('installments').value,
+                            email: document.getElementById('email').value,
+                            transaction_amount: 100
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        const messageDiv = document.getElementById('message');
+                        if (result.status === 'approved') {
+                            messageDiv.innerHTML = '<div class="success">✅ Pagamento aprovado com sucesso!</div>';
+                        } else {
+                            messageDiv.innerHTML = '<div class="error">❌ Pagamento ' + result.status + ': ' + (result.status_detail || 'Erro no pagamento') + '</div>';
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('message').innerHTML = '<div class="error">❌ Erro ao processar pagamento: ' + error + '</div>';
+                    });
+                },
+                onFetching: resource => {
+                    console.log("Fetching resource:", resource);
+                    const messageDiv = document.getElementById('message');
+                    messageDiv.innerHTML = '<div class="success">⏳ Processando pagamento...</div>';
+                    return () => {
+                        // Cleanup function
+                    };
+                }
+            }
+        });
+    </script>
+</body>
+</html>

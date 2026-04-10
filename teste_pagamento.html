@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Rápido</title>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+</head>
+<body>
+    <h2>Teste de Pagamento</h2>
+    <div id="card-form"></div>
+    <div id="result"></div>
+
+    <script>
+        const mp = new MercadoPago('APP_USR-1228299603673792-062511-2cf7ec6e1d129bd3c26d70331d1b71ab');
+        
+        mp.bricks().create("cardPayment", "card-form", {
+            initialization: {
+                amount: 100,
+            },
+            callbacks: {
+                onSubmit: async (cardFormData) => {
+                    try {
+                        const response = await fetch('processar_pagamento.php', {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(cardFormData),
+                        });
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                    } catch (error) {
+                        document.getElementById('result').innerHTML = '<p style="color:red;">Erro: ' + error.message + '</p>';
+                    }
+                },
+                onError: (error) => {
+                    console.error(error);
+                    document.getElementById('result').innerHTML = '<p style="color:red;">Erro: ' + JSON.stringify(error) + '</p>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
