@@ -2,24 +2,23 @@
 /**
  * Refund class file
  */
-namespace MercadoPago\AdvancedPayments;
+namespace MercadoPago;
 
 use MercadoPago\Annotation\RestMethod;
 use MercadoPago\Annotation\RequestParam;
 use MercadoPago\Annotation\Attribute;
-use MercadoPago\Entity;
 
 /**
- * Refund class
- * @RestMethod(resource="/v1/advanced_payments/:advanced_payment_id/refunds", method="create")
- * @RestMethod(resource="/v1/advanced_payments/:advanced_payment_id/refunds/:refund_id", method="read")
+ * refund class
+ * @RestMethod(resource="/v1/payments/:payment_id/refunds", method="create")
+ * @RestMethod(resource="/v1/payments/:payment_id/refunds/:id", method="read")
  */
 class Refund extends Entity {
 
     /**
      * id
      * @Attribute()
-     * @var string
+     * @var int
      */
     protected $id;
 
